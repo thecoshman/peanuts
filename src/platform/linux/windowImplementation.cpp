@@ -13,7 +13,7 @@ namespace Peanuts {
         WindowImplementation::WindowImplementation(WindowOptions options, int BPP) : display(XOpenDisplay(nullptr)), context(0) {
             initDisplay();
 
-            WindowStyle style =  { 0 };
+            WindowStyle style =  { false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             boost::apply_visitor(WindowOptionsVistitor(style), options);
             style.BPP = BPP;
             auto frameBufferConfig = findBestFrameBufferConfig(style);
