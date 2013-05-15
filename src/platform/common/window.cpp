@@ -18,7 +18,7 @@ namespace Peanuts {
         }
 
         std::unique_ptr<Window> Window::Create(WindowOptions options, int BPP){
-			return Kyro::make_unique<WindowImplementation>(options, BPP);
+			return Peanuts::make_unique<WindowImplementation>(options, BPP);
         }
     }
 }

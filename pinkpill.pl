@@ -6,9 +6,10 @@ use PinkPill;
 my $pp = new PinkPill;
 $pp->set_options(
     src_folders => 'src !^src/platform src/platform/common nix^src/platform/linux win^src/platform/windows osx^src/platform/osx',
+    inc_folders => 'src !^src/platform src/platform/common nix^src/platform/linux win^src/platform/windows osx^src/platform/osx dependencies/boost_1_53_0',
     build_folder => 'bin',
     obj_folder => 'bin/obj',
-    compiler_flags => '-std=C++11 -Wall -Wextra',
+    compiler_flags => '-std=c++11 -Wall -Wextra -DPEANUTS_LINUX',
 );
 $, = "\n";
 #my @options = PinkPill->config_options();
