@@ -8,16 +8,7 @@ my $pp = new PinkPill;
 $pp->set_options(
     src_folders => $common_folders,
     inc_folders => $common_folders . 'dependencies/boost_1_53_0 dependencies/glsdk_0.4.4/glload/include',
-    build_folder => 'bin',
-    obj_folder => 'bin/obj',
     compiler_flags => '-std=c++11 -Wall -Wextra -DPEANUTS_LINUX',
 );
 $, = "\n";
-#my @options = PinkPill->config_options();
-#print @options;
-#print "\n\n";
-my @options = $pp->config_options();
-print @options;
-print "\n\n";
 print "\nError logs...\n" and print $pp->error_logs and print "\n\n" unless $pp->build;
-
