@@ -17,7 +17,7 @@ This will be used to save the indavidual platforms from all re-implimenting the 
                 void newEventHandler(std::weak_ptr<genericEventHandler> newHandler);
                 void swapBuffers();
 
-                static std::unique_ptr<Window> Create(WindowOptions options, int BPP = 32);
+                static std::unique_ptr<Window> Create(WindowOptions options);
         };
         
     }

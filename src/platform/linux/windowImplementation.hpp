@@ -19,8 +19,9 @@ namespace Peanuts {
                 void initDisplay();
                 void loadGLFunctions();
                 GLXFBConfig findBestFrameBufferConfig(const WindowStyle& style);
+                WindowStyle passWindowOptions(const WindowOptions& options);
             public:
-                WindowImplementation(WindowOptions options, int BPP = 32);
+                WindowImplementation(WindowOptions options);
                 ~WindowImplementation();
                 void swapBuffers();
         };

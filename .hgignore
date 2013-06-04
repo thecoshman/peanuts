@@ -1,2 +1,4 @@
 syntax: glob
 bin/
+dep_info/
+pinkpill_program

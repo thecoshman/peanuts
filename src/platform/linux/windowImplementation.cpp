@@ -1,21 +1,21 @@
 #include "windowImplementation.hpp"
-#include <boost/lexical_cast.hpp>
 #include <string>
 
 namespace Peanuts {
     namespace Platform {
         static bool contextErrorOccurred = false; // If we go multi thread, may need to consider locking on this... 
         static int contextErrorHandler(Display *dpy, XErrorEvent *ev ) {
+            char buffer[512];
+            XGetErrorText(dpy, ev->error_code, buffer, 512);
+            std::cout << "X reported an error: " << buffer << std::endl;
             contextErrorOccurred = true;
             return 0;
         }
 
-        WindowImplementation::WindowImplementation(WindowOptions options, int BPP) : display(XOpenDisplay(nullptr)), context(0) {
+        WindowImplementation::WindowImplementation(WindowOptions options) : display(XOpenDisplay(nullptr)), context(0) {
             initDisplay();
 
-            WindowStyle style =  { false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            boost::apply_visitor(WindowOptionsVistitor(style), options);
-            style.BPP = BPP;
+            auto style = passWindowOptions(options);
             auto frameBufferConfig = findBestFrameBufferConfig(style);
             auto visualInfo = glXGetVisualFromFBConfig(display, frameBufferConfig); // requires XFree
             XSetWindowAttributes windowAttribs;
@@ -25,23 +25,20 @@ namespace Peanuts {
             xWindow = XCreateWindow(
                 display, RootWindow(display, visualInfo->screen), style.x, style.y, style.width, style.height, 0, visualInfo->depth,
                 InputOutput, visualInfo->visual, CWBorderPixel | CWColormap | CWEventMask, &windowAttribs);
-            XFree(visualInfo);
             if(!xWindow){
                 throw std::runtime_error("XCreateWindow Failed");
             }
             // XStoreName(display, win, "GL 3.0 Window" );
+
             XMapWindow(display, xWindow);
-            // Install an X error handler so the application won't exit if GL 3.0
-            // context allocation fails.
-            //
             // Note this error handler is global.  All display connections in all threads
             // of a process use the same error handler, so be sure to guard against other
             // threads issuing X commands while this code is running.
             contextErrorOccurred = false;
             int (*oldContextErrorHandler)(Display*, XErrorEvent*) = XSetErrorHandler(&contextErrorHandler);
-            
             //auto startup_context = glXCreateNewContext(display, frameBufferConfig, GLX_RGBA_TYPE, 0, True);
             auto startup_context = glXCreateContext(display, visualInfo, nullptr, True);
+            XFree(visualInfo);
             if(!startup_context){
                 throw std::runtime_error("Failed to create basic OpenGL context");
             }
@@ -52,6 +49,10 @@ namespace Peanuts {
                 None
             };
             glXMakeCurrent(display, xWindow, startup_context);
+            XSync(display, False);
+            if (contextErrorOccurred || !context){
+                std::runtime_error("Error whilst attempting tmake context current");
+            }
             loadGLFunctions();
             context = glXCreateContextAttribsARB(display, frameBufferConfig, 0, True, context_attribs);
             // Sync to ensure any errors generated are processed.
@@ -81,13 +82,15 @@ namespace Peanuts {
             if(!display) {
                 throw std::runtime_error("Could not open X display");
             }
-            int versionMajor, versionMinor;
+            int versionMajor = 0;
+            int versionMinor = 0;
+
             if (!glXQueryVersion(display, &versionMajor, &versionMinor)){
                 throw std::runtime_error("'glXQueryVersion' failed - cannot determine supported OpenGL version");
             }
-            if ((versionMajor < 3) || (versionMajor == 3 && versionMinor < 1)){
+            if ((versionMajor < 1) || (versionMajor == 1 && versionMinor < 4)){
                 std::cout << "Detected Version is " << versionMajor << "." << versionMinor << std::endl;
-                throw std::runtime_error("This version of OpenGL is not supported. Requires at least 3.1");
+                throw std::runtime_error("This version of OpenGL is not supported. Requires at least 1.4");
             }
         }
         void WindowImplementation::loadGLFunctions(){
@@ -137,6 +140,21 @@ namespace Peanuts {
             //GLXFBConfig bestFrameBufferConfig = frameBufferConfigs[0]; // TODO update this so that it actually looks through the array to find 'best' config
             XFree (frameBufferConfigs );
             return bestFrameBufferConfig;
+        }
+
+        WindowStyle WindowImplementation::passWindowOptions(const WindowOptions& options){
+            WindowStyle style;
+            style.redBits = options.redBits;
+            style.greenBits = options.greenBits;
+            style.blueBits = options.blueBits;
+            style.alphaBits = options.alphaBits;
+            style.depthBits = options.depthBits;
+            style.stencilBits = options.stencilBits;
+
+            boost::apply_visitor(WindowModeVistitor(style), options.mode);
+            //std::string     title;
+            //OpenGLVersion   glVersion;
+            return style;
         }
     }
 }

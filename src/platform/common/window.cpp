@@ -17,8 +17,8 @@ namespace Peanuts {
             // TODO apply visitor to determine what type of event this is
         }
 
-        std::unique_ptr<Window> Window::Create(WindowOptions options, int BPP){
-			return Peanuts::make_unique<WindowImplementation>(options, BPP);
+        std::unique_ptr<Window> Window::Create(WindowOptions options){
+			return Peanuts::make_unique<WindowImplementation>(options);
         }
     }
 }

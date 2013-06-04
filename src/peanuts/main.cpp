@@ -3,7 +3,8 @@
 
 namespace Peanuts {
     int Main() {
-    	auto win  = Platform::Window::Create(Platform::Windowed(std::pair<int,int>(640,480),Platform::Centered()));
+    	Platform::WindowOptions windowOptions("GL test", Platform::Windowed(std::pair<int,int>(640,480),Platform::Centered()), Platform::OpenGLVersion(1, 4));
+    	auto win  = Platform::Window::Create(windowOptions);
         return 0;
     }
 }
