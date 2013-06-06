@@ -20,7 +20,8 @@ namespace Peanuts {
             auto visualInfo = glXGetVisualFromFBConfig(display, frameBufferConfig); // requires XFree
             XSetWindowAttributes windowAttribs;
             windowAttribs.colormap = XCreateColormap(display, RootWindow(display, visualInfo->screen), visualInfo->visual, AllocNone);
-            windowAttribs.event_mask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
+            //windowAttribs.event_mask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
+            windowAttribs.event_mask = xeventMask;
             windowAttribs.border_pixel = 0;
             xWindow = XCreateWindow(
                 display, RootWindow(display, visualInfo->screen), style.x, style.y, style.width, style.height, 0, visualInfo->depth,
@@ -130,7 +131,7 @@ namespace Peanuts {
                     int sampleBuffer, samples;
                     glXGetFBConfigAttrib(display, frameBufferConfigs[i], GLX_SAMPLE_BUFFERS, &sampleBuffer);
                     glXGetFBConfigAttrib(display, frameBufferConfigs[i], GLX_SAMPLES, &samples);
-                    if (best < 0 || sampleBuffer && samples > bestNumberSamples){
+                    if (best < 0 || (sampleBuffer && (samples > bestNumberSamples))){
                         best = i, bestNumberSamples = samples;
                     }
                 }
@@ -155,6 +156,13 @@ namespace Peanuts {
             //std::string     title;
             //OpenGLVersion   glVersion;
             return style;
+        }
+
+        void WindowImplementation::pumpEvents(){
+            XEvent event;
+            while(XCheckWindowEvent(display, xWindow, xeventMask, &event)){
+                std::cout << event.type << std::endl;
+            }
         }
     }
 }

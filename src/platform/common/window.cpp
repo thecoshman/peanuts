@@ -11,14 +11,12 @@
 
 namespace Peanuts {
     namespace Platform {
-
-        void Window::sendEvent(Event e){
-            auto handler = eventHandlers.top();
-            // TODO apply visitor to determine what type of event this is
-        }
-
         std::unique_ptr<Window> Window::Create(WindowOptions options){
 			return Peanuts::make_unique<WindowImplementation>(options);
+        }
+
+        EventTypes Window::pollEvent(){
+            
         }
     }
 }
