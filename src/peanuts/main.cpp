@@ -12,21 +12,26 @@ namespace Peanuts {
             std::cout << "Window closed!" << std::endl;
             run = false;
         }
+        void operator()(const Platform::Event::MouseMove& event) const{}
+        void operator()(const Platform::Event::KeyDown& event) const{}
     };
     int Main() {
         run = true;
         Platform::WindowOptions windowOptions("GL test", Platform::Windowed(std::pair<int,int>(640,480),Platform::Centered()), Platform::OpenGLVersion(1, 4));
-        auto win  = Platform::Window::Create(windowOptions);
+        auto win  = Platform::Window::create(windowOptions);
         EventHandler eventHandler;
-        //win->newEventHandler(eventHandler);
 
         gl::ClearColor(1.0f, 0.0f, 0.0f, 0.0f);
         std::chrono::milliseconds dura( 2000 );
         while (run) {
-            win->pumpEvents();
             gl::Clear(gl::GL_COLOR_BUFFER_BIT);
             win->swapBuffers();
             std::this_thread::sleep_for(dura);
+            win->pumpEvents();
+            while(auto event = win->pollEvent()){
+                boost::apply_visitor(eventHandler, *event);
+            }
+
         }
         return 0;
     }

@@ -11,12 +11,21 @@
 
 namespace Peanuts {
     namespace Platform {
-        std::unique_ptr<Window> Window::Create(WindowOptions options){
+        std::unique_ptr<Window> Window::create(WindowOptions options){
 			return Peanuts::make_unique<WindowImplementation>(options);
         }
 
-        EventTypes Window::pollEvent(){
-            
+        void Window::storeEvent(EventTypes& event){
+            eventQueue.push_back(event);
+        }
+
+        boost::optional<EventTypes> Window::pollEvent(){
+            if(eventQueue.empty()){
+                return boost::optional<EventTypes>();
+            }
+            auto event = eventQueue.front();
+            eventQueue.pop_front();
+            return boost::optional<EventTypes>(event);
         }
     }
 }

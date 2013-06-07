@@ -1,4 +1,5 @@
 #include "windowImplementation.hpp"
+#include "../common/events.hpp"
 #include <string>
 
 namespace Peanuts {
@@ -159,9 +160,24 @@ namespace Peanuts {
         }
 
         void WindowImplementation::pumpEvents(){
-            XEvent event;
-            while(XCheckWindowEvent(display, xWindow, xeventMask, &event)){
-                std::cout << event.type << std::endl;
+            XEvent xEvent;
+            EventTypes event;
+            while(XCheckWindowEvent(display, xWindow, xeventMask, &xEvent)){
+                EventTypes event;
+                switch(xEvent.type){
+                    case DestroyNotify:
+                        std::cout << xEvent.type << " Window Destroy Event" << std::endl;
+                        event = Event::Close{};
+                        break;
+                    case KeyPress:
+                        std::cout << xEvent.type << " Key Press Event" << std::endl;
+                        event = Event::KeyDown{};
+                        break;
+                    default:
+                        std::cout << xEvent.type << std::endl;
+                        break;
+                }
+                storeEvent(event);
             }
         }
     }

@@ -1,22 +1,23 @@
 #pragma once
 #include <deque>
 #include <memory>
+#include <boost/optional/optional.hpp>
 #include "windowOptions.hpp"
 #include "genericEventHandler.hpp"
 
 namespace Peanuts {
     namespace Platform {
         class Window {
-            protected:                
-                std::deque<EventTypes> events;
-            private:
-                void sendEvent(EventTypes e);
+            private:                
+                std::deque<EventTypes> eventQueue;
+            protected:
+                void storeEvent(EventTypes& event);
             public:
-                EventTypes pollEvent();
+                boost::optional<EventTypes> pollEvent();
                 virtual void pumpEvents()=0;
                 virtual void swapBuffers()=0;
 
-                static std::unique_ptr<Window> Create(WindowOptions options);
+                static std::unique_ptr<Window> create(WindowOptions options);
         };
         
     }
