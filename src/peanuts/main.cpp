@@ -8,11 +8,11 @@ namespace Peanuts {
 
     bool run;
     struct EventHandler : Platform::genericEventHandler{
+        using Platform::genericEventHandler::operator();
         void operator()(const Platform::Event::Close& event) const{
             std::cout << "Window closed!" << std::endl;
             run = false;
         }
-        void operator()(const Platform::Event::MouseMove& event) const{}
         void operator()(const Platform::Event::KeyDown& event) const{
             if (event.key == Platform::KeyCode::Q){
                 run = false;

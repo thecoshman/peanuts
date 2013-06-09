@@ -19,6 +19,6 @@ namespace Peanuts {
         }
         // TODO add in all the other events that the OS can provide
         
-        typedef boost::variant<Event::MouseMove, Event::KeyDown, Event::KeyDown, Event::Close> EventTypes;
+        typedef boost::variant<Event::MouseMove, Event::KeyDown, Event::KeyUp, Event::Close> EventTypes;
     }
 }
