@@ -13,7 +13,11 @@ namespace Peanuts {
             run = false;
         }
         void operator()(const Platform::Event::MouseMove& event) const{}
-        void operator()(const Platform::Event::KeyDown& event) const{}
+        void operator()(const Platform::Event::KeyDown& event) const{
+            if (event.key == Platform::KeyCode::Q){
+                run = false;
+            }
+        }
     };
     int Main() {
         run = true;
@@ -25,13 +29,12 @@ namespace Peanuts {
         std::chrono::milliseconds dura( 2000 );
         while (run) {
             gl::Clear(gl::GL_COLOR_BUFFER_BIT);
-            win->swapBuffers();
             std::this_thread::sleep_for(dura);
             win->pumpEvents();
             while(auto event = win->pollEvent()){
                 boost::apply_visitor(eventHandler, *event);
             }
-
+            win->swapBuffers();
         }
         return 0;
     }

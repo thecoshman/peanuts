@@ -13,6 +13,52 @@ namespace Peanuts {
             return 0;
         }
 
+        KeyCode convertKeySymToGeneric(KeySym keysym){
+            switch (keysym){
+                case 65: return KeyCode::A;
+                case 66: return KeyCode::B;
+                case 67: return KeyCode::C;
+                case 68: return KeyCode::D;
+                case 69: return KeyCode::E;
+                case 70: return KeyCode::F;
+                case 71: return KeyCode::G;
+                case 72: return KeyCode::H;
+                case 73: return KeyCode::I;
+                case 74: return KeyCode::J;
+                case 75: return KeyCode::K;
+                case 76: return KeyCode::L;
+                case 77: return KeyCode::M;
+                case 78: return KeyCode::N;
+                case 79: return KeyCode::O;
+                case 80: return KeyCode::P;
+                case 81: return KeyCode::Q;
+                case 82: return KeyCode::R;
+                case 83: return KeyCode::S;
+                case 84: return KeyCode::T;
+                case 85: return KeyCode::U;
+                case 86: return KeyCode::V;
+                case 87: return KeyCode::W;
+                case 88: return KeyCode::X;
+                case 89: return KeyCode::Y;
+                case 90: return KeyCode::Z;
+                case 65307: return KeyCode::ESC;
+                case 65470: return KeyCode::F1;
+                case 65471: return KeyCode::F2;
+                case 65472: return KeyCode::F3;
+                case 65473: return KeyCode::F4;
+                case 65474: return KeyCode::F5;
+                case 65475: return KeyCode::F6;
+                case 65476: return KeyCode::F7;
+                case 65477: return KeyCode::F8;
+                case 65478: return KeyCode::F9;
+                case 65479: return KeyCode::F10;
+                case 65480: return KeyCode::F11;
+                case 65481: return KeyCode::F12;
+                default:
+                    std::cout << "No idea about keysym: '" << keysym << "'" << std::endl;
+            }
+            return KeyCode::UNKOWN_KEY;
+        }
         WindowImplementation::WindowImplementation(WindowOptions options) : display(XOpenDisplay(nullptr)), context(0) {
             initDisplay();
 
@@ -171,10 +217,19 @@ namespace Peanuts {
                         break;
                     case KeyPress:
                         std::cout << xEvent.type << " Key Press Event" << std::endl;
-                        event = Event::KeyDown{};
+                        std::cout << "  Key state: " << xEvent.xkey.state << std::endl;
+                        std::cout << "  Keycode: " << xEvent.xkey.keycode << std::endl;
+                        event = Event::KeyDown(convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1)));
+                        break;
+                    case KeyRelease:
+                        break;
+                        //std::cout << xEvent.type << " Key Release Event" << std::endl;
+                        //std::cout << "  Key state: " << xEvent.xkey.state << std::endl;
+                        //std::cout << "  Keycode: " << xEvent.xkey.keycode << std::endl;
+                        //event = Event::KeyDown{};
                         break;
                     default:
-                        std::cout << xEvent.type << std::endl;
+                        //std::cout << xEvent.type << std::endl;
                         break;
                 }
                 storeEvent(event);
