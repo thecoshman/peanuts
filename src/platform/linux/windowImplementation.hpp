@@ -10,22 +10,19 @@
 
 
 namespace Peanuts {
-    namespace Platform {
-        class WindowImplementation : public Window {
-                Display *display;
-                ::Window xWindow;
-                GLXContext context;
-
-                void initDisplay();
-                void loadGLFunctions();
-                GLXFBConfig findBestFrameBufferConfig(const WindowStyle& style);
-                WindowStyle passWindowOptions(const WindowOptions& options);
-                long xeventMask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
-            public:
-                WindowImplementation(WindowOptions options);
-                ~WindowImplementation();
-                void swapBuffers();
-                void pumpEvents();
-        };
-    }
+    class WindowImplementation : public Window {
+        Display *display;
+        ::Window xWindow;
+        GLXContext context;
+        void initDisplay();
+            void loadGLFunctions();
+            GLXFBConfig findBestFrameBufferConfig(const WindowStyle& style);
+            WindowStyle passWindowOptions(const WindowOptions& options);
+            long xeventMask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
+        public:
+            WindowImplementation(WindowOptions options);
+            ~WindowImplementation();
+            void swapBuffers();
+            void pumpEvents();
+    };
 }
