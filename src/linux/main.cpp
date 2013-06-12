@@ -1,4 +1,4 @@
-#include "peanuts/main.hpp"
+#include "main.hpp"
 #include "windowImplementation.hpp"
 
 int main() {

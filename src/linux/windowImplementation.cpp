@@ -1,6 +1,6 @@
 #include <string>
 #include "windowImplementation.hpp"
-#include "../common/events.hpp"
+#include "common/events.hpp"
 #include "keySymToGeneric.hpp"
 
 namespace Peanuts {

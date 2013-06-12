@@ -2,11 +2,11 @@
 #include "util.hpp"
 
 #ifdef PEANUTS_WINDOWS
-    #include "platform/windows/windowImplementation.hpp"
+    #include "windows/windowImplementation.hpp"
 #elif defined PEANUTS_LINUX
-    #include "platform/linux/windowImplementation.hpp"
+    #include "linux/windowImplementation.hpp"
 #elif defined PEANUTS_OSX
-    #include "platform/osx/windowImplementation.hpp"
+    #include "osx/windowImplementation.hpp"
 #endif
 
 namespace Peanuts {

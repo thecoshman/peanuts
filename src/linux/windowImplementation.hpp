@@ -5,7 +5,7 @@
 #include <glload/glx_exts.h>
 //#include <glload/gl_3_2.hpp>
 #include <glload/gll.hpp>
-#include "platform/common/window.hpp"
+#include "common/window.hpp"
 #include "windowOptionsVisitors.hpp"
 
 
@@ -14,6 +14,7 @@ namespace Peanuts {
         Display *display;
         ::Window xWindow;
         GLXContext context;
+
         void initDisplay();
             void loadGLFunctions();
             GLXFBConfig findBestFrameBufferConfig(const WindowStyle& style);

@@ -1,9 +1,9 @@
 #pragma once
 #include <boost/lexical_cast.hpp>
-#include "../common/windowOptions.hpp"
+#include "common/windowOptions.hpp"
 
 namespace Peanuts {
-    namespace Platform {
+
         struct WindowStyle {
             bool fullScreen, borders;
             int x, y, width, height, BPP, redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits;
@@ -64,5 +64,5 @@ namespace Peanuts {
                 boost::apply_visitor(WindowPositionVisitor(style), mode.position);
             }
         };
-    }
+
 }

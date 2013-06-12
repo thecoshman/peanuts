@@ -1,7 +1,7 @@
 #include <chrono>
 #include <thread>
 #include <glload/gl_core.hpp>
-#include "platform/common/window.hpp"
+#include "common/window.hpp"
 #include <iostream>
 
 bool run;
@@ -18,7 +18,7 @@ struct EventHandler : Peanuts::genericEventHandler{
     }
 };
 
-int Main() {
+namespace Peanuts{ int Main() {
     run = true;
     Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(std::pair<int,int>(640,480),Peanuts::Centered()), Peanuts::OpenGLVersion(1, 4));
     auto win  = Peanuts::Window::create(windowOptions);
@@ -33,6 +33,4 @@ int Main() {
             boost::apply_visitor(eventHandler, *event);
         }
         win->swapBuffers();
-    }
-    return 0;
-}
+}   }

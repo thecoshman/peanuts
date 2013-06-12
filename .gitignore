@@ -1,0 +1,12 @@
+# Compiled Object files
+*.o
+
+# Compiled Static libraries
+*.a
+
+# Build Information
+*.d
+
+# Executable
+pinkpill_program
+*.exe
