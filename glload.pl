@@ -1,19 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use PinkPill;
-
-#gll_c.c
-#gll_cpp.cpp
-#gll_gl_ext_base.h
-#gll_gl_ext.c
-#gll_gl_ext.h
-#gll_util.h
-#glxl_ext.c
-#glxl_ext.h
-#wgll_ext_base.h
-#wgll_ext.c
-#wgll_ext.h
+use pinkpill::PinkPill;
 
 my $common_folder = 'dependencies/glsdk_0.4.4/glload';
 my $src_folder = $common_folder . '/source/';

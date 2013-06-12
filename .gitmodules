@@ -1,0 +1,3 @@
+[submodule "pinkpill"]
+	path = pinkpill
+	url = git@github.com:thecoshman/pinkpill.git
