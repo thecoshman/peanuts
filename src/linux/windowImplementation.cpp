@@ -4,10 +4,36 @@
 #include "keySymToGeneric.hpp"
 
 namespace Peanuts {
-    static bool contextErrorOccurred = false; // If we go multi thread, may need to consider locking on this... 
-    static int contextErrorHandler(Display *dpy, XErrorEvent *ev ) {
+    namespace linuxDetails{
+        Peanuts::Event::FucosGrabState grabModeToGrabState(int x11EventGrabMode) {
+            switch(x11EventGrabMode){
+            case NotifyNormal:
+                return Peanuts::Event::FucosGrabState::Normal; 
+                break;
+            case NotifyWhileGrabbed:
+                return Peanuts::Event::FucosGrabState::WhileGrabbed; 
+                break;
+            case NotifyGrab:
+                return Peanuts::Event::FucosGrabState::Grab; 
+                break;
+            case NotifyUngrab:
+                return Peanuts::Event::FucosGrabState::Ungrab; 
+                break;                
+            }
+        };
+
+        int matchMotion(Display *display, XEvent* xEvent, XPointer arguments){
+            if(xEvent->type == MotionNotify){
+                return 1;
+            }
+            return 0;
+        } 
+    }
+
+    bool contextErrorOccurred = false; // If we go multi thread, may need to consider locking on this... 
+    int contextErrorHandler(Display *display, XErrorEvent *xErrorEvent ) {
         char buffer[512];
-        XGetErrorText(dpy, ev->error_code, buffer, 512);
+        XGetErrorText(display, xErrorEvent->error_code, buffer, 512);
         std::cout << "X reported an error: " << buffer << std::endl;
         contextErrorOccurred = true;
         return 0;
@@ -16,11 +42,11 @@ namespace Peanuts {
     WindowImplementation::WindowImplementation(WindowOptions options) : display(XOpenDisplay(nullptr)), context(0) {
         initDisplay();
         auto style = passWindowOptions(options);
+        width = style.width; height = style.height; // This are stored for the sake of sending events
         auto frameBufferConfig = findBestFrameBufferConfig(style);
         auto visualInfo = glXGetVisualFromFBConfig(display, frameBufferConfig); // requires XFree
         XSetWindowAttributes windowAttribs;
         windowAttribs.colormap = XCreateColormap(display, RootWindow(display, visualInfo->screen), visualInfo->visual, AllocNone);
-        //windowAttribs.event_mask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
         windowAttribs.event_mask = xeventMask;
         windowAttribs.border_pixel = 0;
         xWindow = XCreateWindow(
@@ -29,7 +55,7 @@ namespace Peanuts {
         if(!xWindow){
             throw std::runtime_error("XCreateWindow Failed");
         }
-        // XStoreName(display, win, "GL 3.0 Window" );
+        XStoreName(display, xWindow, options.title.c_str());
         XMapWindow(display, xWindow);
         // Note this error handler is global.  All display connections in all threads
         // of a process use the same error handler, so be sure to guard against other
@@ -43,8 +69,8 @@ namespace Peanuts {
             throw std::runtime_error("Failed to create basic OpenGL context");
         }
         int context_attribs[] = {
-            GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-            GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+            GLX_CONTEXT_MAJOR_VERSION_ARB, options.glVersion.versionMajor,
+            GLX_CONTEXT_MINOR_VERSION_ARB, options.glVersion.versionMinor,
             //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
             None
         };
@@ -64,6 +90,7 @@ namespace Peanuts {
         XSetErrorHandler(oldContextErrorHandler);
         glXMakeCurrent(display, xWindow, context); // this may want to be moved to a seperate function, so it does not have to be done on window creation
         glXDestroyContext(display, startup_context);
+        XSelectInput(display, xWindow, xeventMask);
         loadGLFunctions();
     }
     
@@ -158,7 +185,8 @@ namespace Peanuts {
     void WindowImplementation::pumpEvents(){
         XEvent xEvent;
         EventTypes event;
-        while(XCheckWindowEvent(display, xWindow, xeventMask, &xEvent)){
+        while(XPending(display)){
+            XNextEvent(display, &xEvent);
             EventTypes event;
             switch(xEvent.type){
                 case DestroyNotify:
@@ -171,9 +199,26 @@ namespace Peanuts {
                 case KeyRelease:
                     event = Event::KeyUp(convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1)));
                     break;
-                default:
-                    //std::cout << xEvent.type << std::endl;
+                case ConfigureNotify:
                     break;
+                    if(xEvent.xconfigure.width != width || xEvent.xconfigure.height != height){
+                        event = Event::WindowResize{xEvent.xconfigure.width, xEvent.xconfigure.height};
+                        width = xEvent.xconfigure.width;
+                        height = xEvent.xconfigure.height;
+                    }
+                    break;
+                case FocusIn:
+                    event = Event::FocusGain(linuxDetails::grabModeToGrabState(xEvent.xfocus.mode));
+                    break;
+                case FocusOut:
+                    event = Event::FocusLoose(linuxDetails::grabModeToGrabState(xEvent.xfocus.mode));
+                    break;
+                case MotionNotify:
+                    while(XCheckIfEvent(display, &xEvent, linuxDetails::matchMotion, 0)){}
+                    event = Event::MouseMove{xEvent.xmotion.x, xEvent.xmotion.y};
+                default:
+                    std::cout << xEvent.type << std::endl;
+                    return;
             }
             storeEvent(event);
         }

@@ -2,9 +2,9 @@
 #include "keycode.hpp"
 
 namespace Peanuts {
-    namespace Event{
+    namespace Event {
         struct MouseMove {
-            std::pair<int,int> position;
+            int x, y;
         };
         struct KeyDown{
             KeyDown(KeyCode key): key(key){};
@@ -14,8 +14,24 @@ namespace Peanuts {
             KeyUp(KeyCode key): key(key){};
             KeyCode key;
         };
+        struct WindowResize {
+            int width, height;
+        };
+        enum class FucosGrabState {
+            Normal, WhileGrabbed, Grab, Ungrab,
+        };
+        struct FocusLoose {
+            FocusLoose(FucosGrabState grabState = FucosGrabState::Normal): grabState(grabState){}
+            FucosGrabState grabState;
+        };
+        struct FocusGain {
+            FocusGain(FucosGrabState grabState = FucosGrabState::Normal): grabState(grabState){}
+            FucosGrabState grabState;
+        };
         struct Close{};
     }
-    // TODO add in all the other events that the OS can provide    
-    typedef boost::variant<Event::MouseMove, Event::KeyDown, Event::KeyUp, Event::Close> EventTypes;
+
+    typedef boost::variant<Event::MouseMove, Event::KeyDown, Event::KeyUp,
+        Event::WindowResize, Event::FocusLoose, Event::FocusGain,
+        Event::Close> EventTypes;
 }

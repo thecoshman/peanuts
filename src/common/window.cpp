@@ -1,5 +1,6 @@
 #include "window.hpp"
 #include "util.hpp"
+#include <iostream>
 
 #ifdef PEANUTS_WINDOWS
     #include "windows/windowImplementation.hpp"

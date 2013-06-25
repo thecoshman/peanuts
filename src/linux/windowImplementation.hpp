@@ -14,16 +14,17 @@ namespace Peanuts {
         Display *display;
         ::Window xWindow;
         GLXContext context;
+        int width, height;
 
         void initDisplay();
-            void loadGLFunctions();
-            GLXFBConfig findBestFrameBufferConfig(const WindowStyle& style);
-            WindowStyle passWindowOptions(const WindowOptions& options);
-            long xeventMask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
-        public:
-            WindowImplementation(WindowOptions options);
-            ~WindowImplementation();
-            void swapBuffers();
-            void pumpEvents();
+        void loadGLFunctions();
+        GLXFBConfig findBestFrameBufferConfig(const WindowStyle& style);
+        WindowStyle passWindowOptions(const WindowOptions& options);
+        long xeventMask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
+    public:
+        WindowImplementation(WindowOptions options);
+        ~WindowImplementation();
+        void swapBuffers();
+        void pumpEvents();
     };
 }

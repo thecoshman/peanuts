@@ -8,10 +8,12 @@ namespace Peanuts {
         std::pair<int, int> res;
     };
     struct Maximised {};
-    typedef boost::variant<Maximised, std::pair<int, int> > WindowSize;
+    typedef std::pair<int, int> size;
+    typedef boost::variant<Maximised, size> WindowSize;
 
     struct Centered {};
-    typedef boost::variant<Centered, std::pair<int, int> > WindowPosition;
+    typedef std::pair<int, int> position;
+    typedef boost::variant<Centered, position> WindowPosition;
     
     enum class Borders {
         On, Off
@@ -26,9 +28,9 @@ namespace Peanuts {
     typedef boost::variant<FullScreen, Windowed> WindowMode;
     
     struct OpenGLVersion{
-        OpenGLVersion(unsigned int versionMajor = 1, unsigned int versionMinor = 4)
+        OpenGLVersion(int versionMajor = 1, int versionMinor = 4)
             : versionMajor(versionMajor), versionMinor(versionMinor){}
-        unsigned int versionMajor, versionMinor;
+        int versionMajor, versionMinor;
     };
     
     struct WindowOptions{
