@@ -22,6 +22,16 @@ namespace Peanuts {
             }
         };
 
+        Peanuts::MouseButton xButtonStateToMouseButton(unsigned int xButtonState){
+            if(xButtonState == Button1){ return MouseButton::LEFT; }
+            if(xButtonState == Button2){ return MouseButton::MIDDLE; }
+            if(xButtonState == Button3){ return MouseButton::RIGHT; }
+            if(xButtonState == Button4){ return MouseButton::SCROLL_UP; }
+            if(xButtonState == Button5){ return MouseButton::SCROLL_DOWN; }
+            std::cout << "button state : " << xButtonState << std::endl;
+            return MouseButton::UNKOWN_BUTTON;
+        }
+
         int matchMotion(Display *display, XEvent* xEvent, XPointer arguments){
             if(xEvent->type == MotionNotify){
                 return 1;
@@ -194,10 +204,10 @@ namespace Peanuts {
                     event = Event::Close{};
                     break;
                 case KeyPress:
-                    event = Event::KeyDown(convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1)));
+                    event = Event::KeyDown{convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1))};
                     break;
-                case KeyRelease:
-                    event = Event::KeyUp(convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1)));
+                case KeyRelease:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                    event = Event::KeyUp{convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1))};
                     break;
                 case ConfigureNotify:
                     break;
@@ -214,8 +224,17 @@ namespace Peanuts {
                     event = Event::FocusLoose(linuxDetails::grabModeToGrabState(xEvent.xfocus.mode));
                     break;
                 case MotionNotify:
-                    while(XCheckIfEvent(display, &xEvent, linuxDetails::matchMotion, 0)){}
-                    event = Event::MouseMove{xEvent.xmotion.x, xEvent.xmotion.y};
+                    while(XCheckIfEvent(display, &xEvent, linuxDetails::matchMotion, 0)){
+                        if(xEvent.xmotion.window == xWindow){
+                            event = Event::MouseMove{xEvent.xmotion.x, xEvent.xmotion.y};
+                        }
+                    }
+                case ButtonPress:
+                    event = Event::MouseDown{linuxDetails::xButtonStateToMouseButton(xEvent.xbutton.button)};
+                    break;
+                case ButtonRelease:
+                    event = Event::MouseUp{linuxDetails::xButtonStateToMouseButton(xEvent.xbutton.button)};
+                    break;
                 default:
                     std::cout << xEvent.type << std::endl;
                     return;

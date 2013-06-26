@@ -1,17 +1,22 @@
 #pragma once
 #include "keycode.hpp"
+#include "mousebutton.hpp"
 
 namespace Peanuts {
     namespace Event {
         struct MouseMove {
             int x, y;
         };
+        struct MouseDown {
+            MouseButton button;
+        };
+        struct MouseUp {
+            MouseButton button;
+        };
         struct KeyDown{
-            KeyDown(KeyCode key): key(key){};
             KeyCode key;
         };
         struct KeyUp{
-            KeyUp(KeyCode key): key(key){};
             KeyCode key;
         };
         struct WindowResize {
@@ -31,7 +36,7 @@ namespace Peanuts {
         struct Close{};
     }
 
-    typedef boost::variant<Event::MouseMove, Event::KeyDown, Event::KeyUp,
+    typedef boost::variant<Event::MouseMove, Event::MouseDown, Event::MouseUp, Event::KeyDown, Event::KeyUp,
         Event::WindowResize, Event::FocusLoose, Event::FocusGain,
         Event::Close> EventTypes;
 }
