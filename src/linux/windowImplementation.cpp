@@ -57,6 +57,10 @@ namespace Peanuts {
             style.x = (DisplayWidth(display, DefaultScreen(display)) - style.width) / 2;
             style.y = (DisplayHeight(display, DefaultScreen(display)) - style.height) / 2;
         }
+        if(style.maximised){
+            style.width = DisplayWidth(display, DefaultScreen(display));
+            style.height = DisplayHeight(display, DefaultScreen(display));
+        }
         width = style.width; height = style.height; // This are stored for the sake of sending events
 
         auto frameBufferConfig = findBestFrameBufferConfig(style);
@@ -71,9 +75,13 @@ namespace Peanuts {
             InputOutput, visualInfo->visual, CWBorderPixel | CWColormap | CWEventMask, &windowAttribs);
         if(!xWindow){
             throw std::runtime_error("XCreateWindow Failed");
-        }
+        }      
 
-        std::cout << "width:hegiht = " << DisplayWidth( display, DefaultScreen( display ) ) << ":" << DisplayHeight( display, DefaultScreen( display ) ) << std::endl;
+        if(style.fullScreen){
+            XWindowAttributes attributes;
+            XGetWindowAttributes(display, xWindow, &attributes);
+            XMoveResizeWindow(display, xWindow, -attributes.x, -attributes.y, DisplayWidth(display, DefaultScreen(display)), DisplayHeight(display, DefaultScreen(display))); 
+        } 
 
         XStoreName(display, xWindow, options.title.c_str());
         XMapWindow(display, xWindow);

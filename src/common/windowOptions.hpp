@@ -7,6 +7,7 @@ namespace Peanuts {
         FullScreen(std::pair<int, int> resolution): res(resolution) {} 
         std::pair<int, int> res;
     };
+    
     struct Maximised {};
     typedef std::pair<int, int> size;
     typedef boost::variant<Maximised, size> WindowSize;
@@ -19,7 +20,8 @@ namespace Peanuts {
         On, Off
     };
     struct Windowed{
-        Windowed(WindowSize winSize, WindowPosition winPosition, Borders winBorders = Borders::On): size(winSize), position(winPosition), borders(winBorders) {}
+        Windowed(Maximised winSize, Borders winBorders = Borders::On): size(winSize), position(std::make_pair(0,0)), borders(winBorders) {}
+        Windowed(std::pair<int, int> winSize, WindowPosition winPosition, Borders winBorders = Borders::On): size(winSize), position(winPosition), borders(winBorders) {}
         WindowSize size;
         WindowPosition position;
         Borders borders;
