@@ -4,7 +4,7 @@
 
 namespace Peanuts {
     struct WindowStyle {
-        bool fullScreen, borders, center, maximised;
+        bool fullScreen, deborder, center, maximised;
         int x, y, width, height, BPP, redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits;
     };
 
@@ -49,16 +49,13 @@ namespace Peanuts {
     
         void operator()(const FullScreen& mode) const {
             style.x = style.y = 0;
-            style.fullScreen = true;
+            style.fullScreen = style.deborder = true;
             style.width = mode.res.first;
             style.height = mode.res.second;
-            style.borders = false;
         }
         void operator()(const Windowed& mode) const {
-            if(mode.borders == Borders::On){
-                style.borders = true;
-            } else {
-                style.borders = false;
+            if(mode.borders == Borders::Off){
+                style.deborder = true;
             }
             boost::apply_visitor(WindowPositionVisitor(style), mode.position);
             boost::apply_visitor(WindowSizeVisitor(style), mode.size);

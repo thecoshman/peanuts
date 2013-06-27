@@ -2,6 +2,7 @@
 #include "windowImplementation.hpp"
 #include "common/events.hpp"
 #include "keySymToGeneric.hpp"
+#include "X11/Xatom.h"
 
 namespace Peanuts {
     namespace linuxDetails{
@@ -77,6 +78,22 @@ namespace Peanuts {
             throw std::runtime_error("XCreateWindow Failed");
         }      
 
+        if(style.deborder){
+            struct Hints{
+                unsigned long   flags;
+                unsigned long   functions;
+                unsigned long   decorations;
+                long            inputMode;
+                unsigned long   status;
+            };
+            Hints hints;
+            hints.flags = 2; // changing window decorations...
+            hints.decorations = 0; // ... turn off
+            auto property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
+            if(property){
+                XChangeProperty(display, xWindow, property, property, 32, PropModeReplace, reinterpret_cast<const unsigned char*>(&hints), 5);
+            }
+        }
         if(style.fullScreen){
             XWindowAttributes attributes;
             XGetWindowAttributes(display, xWindow, &attributes);
@@ -126,7 +143,7 @@ namespace Peanuts {
         loadGLFunctions();
     }
     
-    WindowImplementation::~WindowImplementation() {
+    WindowImplementation::~WindowImplementation(){
         glXDestroyContext(display, context);
         XDestroyWindow(display, xWindow);
         // XFreeColormap(display, colormap);
@@ -208,12 +225,9 @@ namespace Peanuts {
         style.alphaBits = options.alphaBits;
         style.depthBits = options.depthBits;
         style.stencilBits = options.stencilBits;
-        style.center = style.fullScreen = false;
-        style.borders = true;
+        style.fullScreen = style.deborder = style.center = style.maximised = false;
 
         boost::apply_visitor(WindowModeVistitor(style), options.mode);
-        //std::string     title;
-        //OpenGLVersion   glVersion;
         return style;
     }
     
