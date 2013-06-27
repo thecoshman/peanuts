@@ -4,7 +4,7 @@
 
 namespace Peanuts {
     struct WindowStyle {
-        bool fullScreen, borders;
+        bool fullScreen, borders, center;
         int x, y, width, height, BPP, redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits;
     };
 
@@ -16,6 +16,7 @@ namespace Peanuts {
     
         void operator()(const Maximised& size) const{
             style.width = style.height = 100; // need to find current screen size and use that, also need to consider borders
+            style.x = style.y = 0; // override possition to make window sit in top left corner
         }
     
         void operator()(const std::pair<int, int>& size) const{
@@ -31,7 +32,8 @@ namespace Peanuts {
         WindowStyle& style;
     
         void operator()(const Centered& position) const{
-            style.x = style.y = 100; // need to find current screen size and use that, also need to consider borders
+            style.x = style.y = -666;
+            style.center = true;
         }
     
         void operator()(const std::pair<int, int>& postion) const{
@@ -59,8 +61,8 @@ namespace Peanuts {
             } else {
                 style.borders = false;
             }
-            boost::apply_visitor(WindowSizeVisitor(style), mode.size);
             boost::apply_visitor(WindowPositionVisitor(style), mode.position);
+            boost::apply_visitor(WindowSizeVisitor(style), mode.size);
         }
     };
 }

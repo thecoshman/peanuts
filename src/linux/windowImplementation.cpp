@@ -51,13 +51,20 @@ namespace Peanuts {
     
     WindowImplementation::WindowImplementation(WindowOptions options) : display(XOpenDisplay(nullptr)), context(0) {
         initDisplay();
+        //auto screenRes = std::make_pair(DisplayWidth(display, DefaultScreen(display)), DisplayHeight(display, DefaultScreen(display)));
         auto style = passWindowOptions(options);
+        if(style.center){
+            style.x = (DisplayWidth(display, DefaultScreen(display)) - style.width) / 2;
+            style.y = (DisplayHeight(display, DefaultScreen(display)) - style.height) / 2;
+        }
         width = style.width; height = style.height; // This are stored for the sake of sending events
+
         auto frameBufferConfig = findBestFrameBufferConfig(style);
-        auto visualInfo = glXGetVisualFromFBConfig(display, frameBufferConfig); // requires XFree
+        auto visualInfo = glXGetVisualFromFBConfig(display, frameBufferConfig);
+
         XSetWindowAttributes windowAttribs;
         windowAttribs.colormap = XCreateColormap(display, RootWindow(display, visualInfo->screen), visualInfo->visual, AllocNone);
-        windowAttribs.event_mask = xeventMask;
+        windowAttribs.event_mask = xEventMask;
         windowAttribs.border_pixel = 0;
         xWindow = XCreateWindow(
             display, RootWindow(display, visualInfo->screen), style.x, style.y, style.width, style.height, 0, visualInfo->depth,
@@ -65,14 +72,20 @@ namespace Peanuts {
         if(!xWindow){
             throw std::runtime_error("XCreateWindow Failed");
         }
+
+        std::cout << "width:hegiht = " << DisplayWidth( display, DefaultScreen( display ) ) << ":" << DisplayHeight( display, DefaultScreen( display ) ) << std::endl;
+
         XStoreName(display, xWindow, options.title.c_str());
         XMapWindow(display, xWindow);
+        XMoveWindow(display, xWindow, style.x, style.y);
+        XFlush(display );
+
         // Note this error handler is global.  All display connections in all threads
         // of a process use the same error handler, so be sure to guard against other
         // threads issuing X commands while this code is running.
         contextErrorOccurred = false;
         int (*oldContextErrorHandler)(Display*, XErrorEvent*) = XSetErrorHandler(&contextErrorHandler);
-        //auto startup_context = glXCreateNewContext(display, frameBufferConfig, GLX_RGBA_TYPE, 0, True);
+
         auto startup_context = glXCreateContext(display, visualInfo, nullptr, True);
         XFree(visualInfo);
         if(!startup_context){
@@ -89,6 +102,7 @@ namespace Peanuts {
         if (contextErrorOccurred || !context){
             std::runtime_error("Error whilst attempting tmake context current");
         }
+
         loadGLFunctions();
         context = glXCreateContextAttribsARB(display, frameBufferConfig, 0, True, context_attribs);
         // Sync to ensure any errors generated are processed.
@@ -98,9 +112,9 @@ namespace Peanuts {
         }
         // Restore the original error handler
         XSetErrorHandler(oldContextErrorHandler);
-        glXMakeCurrent(display, xWindow, context); // this may want to be moved to a seperate function, so it does not have to be done on window creation
+        glXMakeCurrent(display, xWindow, context);
         glXDestroyContext(display, startup_context);
-        XSelectInput(display, xWindow, xeventMask);
+        XSelectInput(display, xWindow, xEventMask);
         loadGLFunctions();
     }
     
@@ -186,6 +200,9 @@ namespace Peanuts {
         style.alphaBits = options.alphaBits;
         style.depthBits = options.depthBits;
         style.stencilBits = options.stencilBits;
+        style.center = style.fullScreen = false;
+        style.borders = true;
+
         boost::apply_visitor(WindowModeVistitor(style), options.mode);
         //std::string     title;
         //OpenGLVersion   glVersion;

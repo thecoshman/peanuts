@@ -15,12 +15,12 @@ namespace Peanuts {
         ::Window xWindow;
         GLXContext context;
         int width, height;
+        long xEventMask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
 
         void initDisplay();
         void loadGLFunctions();
         GLXFBConfig findBestFrameBufferConfig(const WindowStyle& style);
         WindowStyle passWindowOptions(const WindowOptions& options);
-        long xeventMask = FocusChangeMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
     public:
         WindowImplementation(WindowOptions options);
         ~WindowImplementation();
