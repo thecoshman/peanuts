@@ -49,7 +49,8 @@ namespace Peanuts {
     
         void operator()(const FullScreen& mode) const {
             style.x = style.y = 0;
-            style.fullScreen = style.deborder = true;
+            //style.fullScreen = style.deborder = true;
+            style.fullScreen = true;
             style.width = mode.res.first;
             style.height = mode.res.second;
         }

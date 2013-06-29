@@ -4,10 +4,11 @@
 
 namespace Peanuts {
     struct FullScreen{
+        FullScreen(): res(std::make_pair(100, 100)) {} 
         FullScreen(std::pair<int, int> resolution): res(resolution) {} 
         std::pair<int, int> res;
     };
-    
+
     struct Maximised {};
     typedef std::pair<int, int> size;
     typedef boost::variant<Maximised, size> WindowSize;

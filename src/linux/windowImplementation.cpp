@@ -52,7 +52,6 @@ namespace Peanuts {
     
     WindowImplementation::WindowImplementation(WindowOptions options) : display(XOpenDisplay(nullptr)), context(0) {
         initDisplay();
-        //auto screenRes = std::make_pair(DisplayWidth(display, DefaultScreen(display)), DisplayHeight(display, DefaultScreen(display)));
         auto style = passWindowOptions(options);
         if(style.center){
             style.x = (DisplayWidth(display, DefaultScreen(display)) - style.width) / 2;
@@ -62,7 +61,8 @@ namespace Peanuts {
             style.width = DisplayWidth(display, DefaultScreen(display));
             style.height = DisplayHeight(display, DefaultScreen(display));
         }
-        width = style.width; height = style.height; // This are stored for the sake of sending events
+        // These are stored for the sake of sending events
+        width = style.width; height = style.height;
 
         auto frameBufferConfig = findBestFrameBufferConfig(style);
         auto visualInfo = glXGetVisualFromFBConfig(display, frameBufferConfig);
@@ -71,14 +71,28 @@ namespace Peanuts {
         windowAttribs.colormap = XCreateColormap(display, RootWindow(display, visualInfo->screen), visualInfo->visual, AllocNone);
         windowAttribs.event_mask = xEventMask;
         windowAttribs.border_pixel = 0;
+        windowAttribs.override_redirect = True; 
         xWindow = XCreateWindow(
             display, RootWindow(display, visualInfo->screen), style.x, style.y, style.width, style.height, 0, visualInfo->depth,
             InputOutput, visualInfo->visual, CWBorderPixel | CWColormap | CWEventMask, &windowAttribs);
         if(!xWindow){
             throw std::runtime_error("XCreateWindow Failed");
-        }      
-
+        }
         if(style.deborder){
+            unsigned long HINTS_FUNCTIONS   = 1 << 0;
+            unsigned long HINTS_DECORATIONS = 1 << 1;
+            //unsigned long DECOR_BORDER      = 1 << 1;
+            //unsigned long DECOR_RESIZE     = 1 << 2;
+            //unsigned long DECOR_TITLE       = 1 << 3;
+            //unsigned long DECOR_MENU        = 1 << 4;
+            //unsigned long DECOR_MINIMIZE    = 1 << 5;
+            //unsigned long DECOR_MAXIMIZE    = 1 << 6;
+            //unsigned long FUNC_RESIZE       = 1 << 1;
+            //unsigned long FUNC_MOVE         = 1 << 2;
+            //unsigned long FUNC_MINIMIZE     = 1 << 3;
+            //unsigned long FUNC_MAXIMIZE     = 1 << 4;
+            //unsigned long FUNC_CLOSE        = 1 << 5;
+            
             struct Hints{
                 unsigned long   flags;
                 unsigned long   functions;
@@ -87,23 +101,37 @@ namespace Peanuts {
                 unsigned long   status;
             };
             Hints hints;
-            hints.flags = 2; // changing window decorations...
-            hints.decorations = 0; // ... turn off
+            hints.flags = HINTS_FUNCTIONS | HINTS_DECORATIONS;
+            hints.decorations = 0; // turn off
+            hints.functions = 0; // turn off
             auto property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
             if(property){
                 XChangeProperty(display, xWindow, property, property, 32, PropModeReplace, reinterpret_cast<const unsigned char*>(&hints), 5);
             }
         }
         if(style.fullScreen){
-            XWindowAttributes attributes;
-            XGetWindowAttributes(display, xWindow, &attributes);
-            XMoveResizeWindow(display, xWindow, -attributes.x, -attributes.y, DisplayWidth(display, DefaultScreen(display)), DisplayHeight(display, DefaultScreen(display))); 
+            long mask = StructureNotifyMask | ResizeRedirectMask;
+            XEvent event; {
+                event.xclient.type = ClientMessage;
+                event.xclient.serial = 0;
+                event.xclient.send_event = True;
+                event.xclient.display = display;
+                event.xclient.window = xWindow;
+                event.xclient.message_type = XInternAtom(display, "_NET_WM_STATE", False);
+                event.xclient.format = 32;
+                event.xclient.data.l[0] = 1;  /* set (2 is toggle) */
+                event.xclient.data.l[1] = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+                event.xclient.data.l[2] = 0;
+                event.xclient.data.l[3] = 0;
+                event.xclient.data.l[4] = 0;
+            }
+            XSendEvent(display, XDefaultRootWindow(display), False, mask, &event);
         } 
 
         XStoreName(display, xWindow, options.title.c_str());
         XMapWindow(display, xWindow);
         XMoveWindow(display, xWindow, style.x, style.y);
-        XFlush(display );
+        XFlush(display);
 
         // Note this error handler is global.  All display connections in all threads
         // of a process use the same error handler, so be sure to guard against other
