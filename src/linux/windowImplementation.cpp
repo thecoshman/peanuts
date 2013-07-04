@@ -5,7 +5,7 @@
 #include "X11/Xatom.h"
 
 namespace Peanuts {
-    namespace linuxDetails{
+    namespace {
         Peanuts::Event::FucosGrabState grabModeToGrabState(int x11EventGrabMode) {
             switch(x11EventGrabMode){
             case NotifyNormal:
@@ -277,7 +277,6 @@ namespace Peanuts {
                     event = Event::KeyUp{convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1))};
                     break;
                 case ConfigureNotify:
-                    break;
                     if(xEvent.xconfigure.width != width || xEvent.xconfigure.height != height){
                         event = Event::WindowResize{xEvent.xconfigure.width, xEvent.xconfigure.height};
                         width = xEvent.xconfigure.width;
@@ -285,22 +284,22 @@ namespace Peanuts {
                     }
                     break;
                 case FocusIn:
-                    event = Event::FocusGain(linuxDetails::grabModeToGrabState(xEvent.xfocus.mode));
+                    event = Event::FocusGain(grabModeToGrabState(xEvent.xfocus.mode));
                     break;
                 case FocusOut:
-                    event = Event::FocusLoose(linuxDetails::grabModeToGrabState(xEvent.xfocus.mode));
+                    event = Event::FocusLoose(grabModeToGrabState(xEvent.xfocus.mode));
                     break;
                 case MotionNotify:
-                    while(XCheckIfEvent(display, &xEvent, linuxDetails::matchMotion, 0)){
+                    while(XCheckIfEvent(display, &xEvent, matchMotion, 0)){
                         if(xEvent.xmotion.window == xWindow){
                             event = Event::MouseMove{xEvent.xmotion.x, xEvent.xmotion.y};
                         }
                     }
                 case ButtonPress:
-                    event = Event::MouseDown{linuxDetails::xButtonStateToMouseButton(xEvent.xbutton.button)};
+                    event = Event::MouseDown{xButtonStateToMouseButton(xEvent.xbutton.button)};
                     break;
                 case ButtonRelease:
-                    event = Event::MouseUp{linuxDetails::xButtonStateToMouseButton(xEvent.xbutton.button)};
+                    event = Event::MouseUp{xButtonStateToMouseButton(xEvent.xbutton.button)};
                     break;
                 default:
                     std::cout << xEvent.type << std::endl;
