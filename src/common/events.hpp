@@ -1,4 +1,5 @@
 #pragma once
+#include <boost/variant.hpp>
 #include "keycode.hpp"
 #include "mousebutton.hpp"
 

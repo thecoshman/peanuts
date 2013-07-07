@@ -39,15 +39,15 @@ namespace Peanuts {
             }
             return 0;
         } 
-    }
 
-    bool contextErrorOccurred = false; // If we go multi thread, may need to consider locking on this... 
-    int contextErrorHandler(Display *display, XErrorEvent *xErrorEvent ) {
-        char buffer[512];
-        XGetErrorText(display, xErrorEvent->error_code, buffer, 512);
-        std::cout << "X reported an error: " << buffer << std::endl;
-        contextErrorOccurred = true;
-        return 0;
+        bool contextErrorOccurred = false; // If we go multi thread, may need to consider locking on this... 
+        int contextErrorHandler(Display *display, XErrorEvent *xErrorEvent ) {
+            char buffer[512];
+            XGetErrorText(display, xErrorEvent->error_code, buffer, 512);
+            std::cout << "X reported an error: " << buffer << std::endl;
+            contextErrorOccurred = true;
+            return 0;
+        }
     }
     
     WindowImplementation::WindowImplementation(WindowOptions options) : display(XOpenDisplay(nullptr)), context(0) {
@@ -264,48 +264,61 @@ namespace Peanuts {
         EventTypes event;
         while(XPending(display)){
             XNextEvent(display, &xEvent);
-            EventTypes event;
+            EventTypes pEvent;
             switch(xEvent.type){
                 case DestroyNotify:
                     std::cout << xEvent.type << " Window Destroy Event" << std::endl;
-                    event = Event::Close{};
+                    pEvent = Event::Close{};
                     break;
                 case KeyPress:
-                    event = Event::KeyDown{convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1))};
+                    pEvent = Event::KeyDown{convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1))};
                     break;
-                case KeyRelease:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-                    event = Event::KeyUp{convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1))};
+                case KeyRelease:
+
+                    if (XPending(display)){
+                        XEvent peekingEvent;
+                        XPeekEvent(display, &peekingEvent);
+                        if (peekingEvent.type == KeyPress && peekingEvent.xkey.time == xEvent.xkey.time && peekingEvent.xkey.keycode == xEvent.xkey.keycode){
+                            // delete retriggered KeyPress event
+                            XNextEvent (display, &xEvent);
+                            break;
+                        }
+                    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+                    pEvent = Event::KeyUp{convertKeySymToGeneric(XLookupKeysym(&xEvent.xkey, 1))};
+                    break;
+                case MotionNotify:
+                    while(XCheckIfEvent(display, &xEvent, matchMotion, 0)){
+                        if(xEvent.xmotion.send_event){ continue; }
+                        if(xEvent.xmotion.window != xWindow){ continue; }
+                        if(xEvent.xmotion.x == 0 && xEvent.xmotion.y == 0){ continue; }
+                        std::cout << "Mouse at (" << xEvent.xmotion.x << ", " << xEvent.xmotion.y << ")\n";
+                        pEvent = Event::MouseMove{xEvent.xmotion.x, xEvent.xmotion.y};
+                    }
                     break;
                 case ConfigureNotify:
                     if(xEvent.xconfigure.width != width || xEvent.xconfigure.height != height){
-                        event = Event::WindowResize{xEvent.xconfigure.width, xEvent.xconfigure.height};
+                        pEvent = Event::WindowResize{xEvent.xconfigure.width, xEvent.xconfigure.height};
                         width = xEvent.xconfigure.width;
                         height = xEvent.xconfigure.height;
                     }
                     break;
                 case FocusIn:
-                    event = Event::FocusGain(grabModeToGrabState(xEvent.xfocus.mode));
+                    pEvent = Event::FocusGain(grabModeToGrabState(xEvent.xfocus.mode));
                     break;
                 case FocusOut:
-                    event = Event::FocusLoose(grabModeToGrabState(xEvent.xfocus.mode));
+                    pEvent = Event::FocusLoose(grabModeToGrabState(xEvent.xfocus.mode));
                     break;
-                case MotionNotify:
-                    while(XCheckIfEvent(display, &xEvent, matchMotion, 0)){
-                        if(xEvent.xmotion.window == xWindow){
-                            event = Event::MouseMove{xEvent.xmotion.x, xEvent.xmotion.y};
-                        }
-                    }
                 case ButtonPress:
-                    event = Event::MouseDown{xButtonStateToMouseButton(xEvent.xbutton.button)};
+                    pEvent = Event::MouseDown{xButtonStateToMouseButton(xEvent.xbutton.button)};
                     break;
                 case ButtonRelease:
-                    event = Event::MouseUp{xButtonStateToMouseButton(xEvent.xbutton.button)};
+                    pEvent = Event::MouseUp{xButtonStateToMouseButton(xEvent.xbutton.button)};
                     break;
                 default:
                     std::cout << xEvent.type << std::endl;
                     return;
             }
-            storeEvent(event);
+            storeEvent(pEvent);
         }
     }
 }
