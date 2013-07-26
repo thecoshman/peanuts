@@ -145,8 +145,8 @@ namespace Peanuts {
             throw std::runtime_error("Failed to create basic OpenGL context");
         }
         int context_attribs[] = {
-            GLX_CONTEXT_MAJOR_VERSION_ARB, options.glVersion.versionMajor,
-            GLX_CONTEXT_MINOR_VERSION_ARB, options.glVersion.versionMinor,
+            glX::CONTEXT_MAJOR_VERSION_ARB, options.glVersion.versionMajor,
+            glX::CONTEXT_MINOR_VERSION_ARB, options.glVersion.versionMinor,
             //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
             None
         };
@@ -155,9 +155,10 @@ namespace Peanuts {
         if (contextErrorOccurred || !context){
             std::runtime_error("Error whilst attempting tmake context current");
         }
-
+        std::cout << "About to try loading functions\n";
         loadGLFunctions();
-        context = glXCreateContextAttribsARB(display, frameBufferConfig, 0, True, context_attribs);
+        std::cout << "loaded :D\n";
+        context = glX::CreateContextAttribsARB(display, frameBufferConfig, 0, True, context_attribs);
         // Sync to ensure any errors generated are processed.
         XSync(display, False);
         if (contextErrorOccurred || !context){
@@ -198,11 +199,15 @@ namespace Peanuts {
     }
     
     void WindowImplementation::loadGLFunctions(){
-        if(glload::LoadFunctions() == glload::LS_LOAD_FAILED){
-            throw std::runtime_error("'glload::LoadFunctions' failed");
+        if(!glload::LoadFunctions()){
+            throw std::runtime_error("'glload::LoadFunctions' failed for OpenGL functions");
         }
-        if(glload::LoadGLXFunctions(display, DefaultScreen(display)) == glload::LS_LOAD_FAILED){
-            throw std::runtime_error("'glload::LoadGLXFunctions' failed");
+        std::cout << "OGL functions loaded, what about GLX?\n";
+        auto screen = DefaultScreen(display);
+        std::cout << "Got a 'screen'\n";
+        if(!glload::LoadFunctions(display, screen)){
+            std::cout << "did not like trying that :(\n";
+            throw std::runtime_error("'glload::LoadFunctions' failed for glx functions");
         }
     }
     
