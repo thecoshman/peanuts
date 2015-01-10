@@ -12,6 +12,7 @@ struct EventHandler : Peanuts::genericEventHandler{
         run = false;
     }
     void operator()(const Peanuts::Event::KeyDown& event) const{
+        std::cout << "You pressed the quit key, good by!" << std::endl;
         if (event.key == Peanuts::KeyCode::Q){
             run = false;
         }

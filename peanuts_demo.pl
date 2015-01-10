@@ -11,7 +11,8 @@ $pp->set_options(
     compiler_flags => '-std=c++11 -Wall -Wextra -Wno-unused-parameter -DPEANUTS_LINUX',
     build_folder => 'example/bin/',
     obj_folder => 'example/bin/obj',
-    linker_flags => '-Lbin -Ldependencies/bin',
+    # need to use nvidea's gl lib => https://bugs.launchpad.net/ubuntu/+source/nvidia-graphics-drivers-319/+bug/1248642,
+    linker_flags => '-L/usr/lib/nvidia-331 -Lbin -Ldependencies/bin',
     link_libraries => 'peanuts X11 GL glload ',
     program_name => 'peanuts_demo',
 );
