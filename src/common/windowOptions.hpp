@@ -4,20 +4,25 @@
 
 namespace Peanuts {
     struct FullScreen{
+        FullScreen(): res(std::make_pair(100, 100)) {} 
         FullScreen(std::pair<int, int> resolution): res(resolution) {} 
         std::pair<int, int> res;
     };
+
     struct Maximised {};
-    typedef boost::variant<Maximised, std::pair<int, int> > WindowSize;
+    typedef std::pair<int, int> size;
+    typedef boost::variant<Maximised, size> WindowSize;
 
     struct Centered {};
-    typedef boost::variant<Centered, std::pair<int, int> > WindowPosition;
+    typedef std::pair<int, int> position;
+    typedef boost::variant<Centered, position> WindowPosition;
     
     enum class Borders {
         On, Off
     };
     struct Windowed{
-        Windowed(WindowSize winSize, WindowPosition winPosition, Borders winBorders = Borders::On): size(winSize), position(winPosition), borders(winBorders) {}
+        Windowed(Maximised winSize, Borders winBorders = Borders::On): size(winSize), position(std::make_pair(0,0)), borders(winBorders) {}
+        Windowed(std::pair<int, int> winSize, WindowPosition winPosition, Borders winBorders = Borders::On): size(winSize), position(winPosition), borders(winBorders) {}
         WindowSize size;
         WindowPosition position;
         Borders borders;
@@ -26,9 +31,9 @@ namespace Peanuts {
     typedef boost::variant<FullScreen, Windowed> WindowMode;
     
     struct OpenGLVersion{
-        OpenGLVersion(unsigned int versionMajor = 1, unsigned int versionMinor = 4)
+        OpenGLVersion(int versionMajor = 1, int versionMinor = 4)
             : versionMajor(versionMajor), versionMinor(versionMinor){}
-        unsigned int versionMajor, versionMinor;
+        int versionMajor, versionMinor;
     };
     
     struct WindowOptions{
