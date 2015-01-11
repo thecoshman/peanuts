@@ -2,6 +2,7 @@
 #include <deque>
 #include <memory>
 #include <boost/optional/optional.hpp>
+#include <glload/gl_core.hpp>
 #include "windowOptions.hpp"
 #include "genericEventHandler.hpp"
 

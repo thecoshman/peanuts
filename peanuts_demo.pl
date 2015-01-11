@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use pinkpill::PinkPill;
 
-my $peanuts_includes = 'src dependencies/boost_1_53_0 dependencies/glsdk_0.4.4/glload/include '; 
+my $peanuts_includes = 'src dependencies/boost_1_53_0 dependencies/glsdk_0.5.0/glload/include '; 
 my $pp = new PinkPill;
 $pp->set_options(
     src_folders => 'example/main.cpp',

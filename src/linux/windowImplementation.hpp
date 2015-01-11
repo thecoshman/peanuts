@@ -1,8 +1,8 @@
 #pragma once
 #include <stdexcept>
 #include <X11/Xlib.h>
-//#include <glload/gl_3_3.hpp>
-#include <glload/gl_core.hpp>
+#include <glload/gl_3_3.hpp>
+//#include <glload/gl_core.hpp>
 //#include <glload/glx_exts.h>
 //#include <glload/gll.hpp>
 #include <glload/gl_load.hpp>

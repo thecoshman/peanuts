@@ -1,6 +1,5 @@
 #include <chrono>
 #include <thread>
-#include <glload/gl_core.hpp>
 #include "common/window.hpp"
 #include <iostream>
 
@@ -26,7 +25,7 @@ GLuint create_shader(const std::string& source, GLenum shaderType) {
     gl::ShaderSource(shader, 1, &source_glcstr, NULL);
     gl::CompileShader(shader);
     GLint test;
-    gl::GetShaderiv(shader, gl::GL_COMPILE_STATUS, &test);
+    gl::GetShaderiv(shader, gl::COMPILE_STATUS, &test);
     if(!test) {
         std::cerr << "Shader compilation failed with this message:" << std::endl;
         std::vector<char> compilation_log(512);
@@ -37,8 +36,8 @@ GLuint create_shader(const std::string& source, GLenum shaderType) {
 }
 
 GLuint create_program(const std::string& vertex_shader_code, const std::string& frag_shader_code) {
-    GLuint vertexShader = create_shader(vertex_shader_code, gl::GL_VERTEX_SHADER);
-    GLuint fragmentShader = create_shader(frag_shader_code, gl::GL_FRAGMENT_SHADER);
+    GLuint vertexShader = create_shader(vertex_shader_code, gl::VERTEX_SHADER);
+    GLuint fragmentShader = create_shader(frag_shader_code, gl::FRAGMENT_SHADER);
     GLuint shaderProgram = gl::CreateProgram();
     gl::AttachShader(shaderProgram, vertexShader);
     gl::AttachShader(shaderProgram, fragmentShader);
@@ -79,8 +78,8 @@ namespace Peanuts{
         // Create a Vector Buffer Object that will store the vertices on video memory
         GLuint vbo;
         gl::GenBuffers(1, &vbo);
-        gl::BindBuffer(gl::GL_ARRAY_BUFFER, vbo);
-        gl::BufferData(gl::GL_ARRAY_BUFFER, sizeof(vertices_position), vertices_position, gl::GL_STATIC_DRAW);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+        gl::BufferData(gl::ARRAY_BUFFER, sizeof(vertices_position), vertices_position, gl::STATIC_DRAW);
 
         std::string vert_shader_code = (
             "#version 150\n"
@@ -109,14 +108,14 @@ namespace Peanuts{
         GLint position_attribute = gl::GetAttribLocation(program, "position");
 
         // Specify how the data for position can be accessed
-        gl::VertexAttribPointer(position_attribute, 2, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
+        gl::VertexAttribPointer(position_attribute, 2, gl::FLOAT, false, 0, 0);
         // Enable the attribute
         gl::EnableVertexAttribArray(position_attribute);
 
         while (run) {
-            gl::Clear(gl::GL_COLOR_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
             gl::BindVertexArray(vao);
-            gl::DrawArrays(gl::GL_TRIANGLES, 0, 12);
+            gl::DrawArrays(gl::TRIANGLES, 0, 12);
 
             std::this_thread::sleep_for(dura);
             win->pumpEvents();
